@@ -7,7 +7,7 @@ export const initializeDatabase = async (): Promise<void> => {
     const db = getDatabase();
     
     // Read and execute the schema
-    const schemaPath = path.join(__dirname, '../../../../database/schemas/content-service.sql');
+    const schemaPath = path.join(__dirname, '../../database/schemas/content-service.sql');
     const schema = fs.readFileSync(schemaPath, 'utf8');
     
     try {
