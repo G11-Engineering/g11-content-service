@@ -1,0 +1,21 @@
+# Node.js
+node_modules/
+npm-debug.log
+.env
+dist/
+build/
+*.log
+
+# Next.js build files
+.next/
+frontend/.next/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+test-scim-api.js
