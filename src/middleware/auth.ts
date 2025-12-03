@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import { createError } from './errorHandler';
+import { config } from '../config/config';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -27,8 +28,7 @@ export const authenticateToken = async (
 
     // Verify token locally using JWT
     try {
-      const jwtSecret = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
-      const decoded = jwt.verify(token, jwtSecret) as any;
+      const decoded = jwt.verify(token, config.auth.jwtSecret) as any;
       console.log('Decoded JWT:', decoded);
       req.user = {
         id: decoded.userId,

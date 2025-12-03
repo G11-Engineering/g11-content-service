@@ -1,7 +1,6 @@
 import cron from 'node-cron';
 import axios from 'axios';
-
-const CONTENT_SERVICE_URL = process.env.CONTENT_SERVICE_URL || 'http://localhost:3002';
+import { config, getServiceUrl } from '../config/config';
 
 class PostScheduler {
   private isRunning = false;
@@ -13,8 +12,13 @@ class PostScheduler {
   private start() {
     if (this.isRunning) return;
     
-    // Run every minute to check for scheduled posts
-    cron.schedule('* * * * *', async () => {
+    if (!config.scheduler.enabled) {
+      console.log('Post scheduler is disabled');
+      return;
+    }
+    
+    // Run on configured schedule to check for scheduled posts
+    cron.schedule(config.scheduler.cronSchedule, async () => {
       try {
         await this.publishScheduledPosts();
       } catch (error) {
@@ -23,12 +27,14 @@ class PostScheduler {
     });
 
     this.isRunning = true;
-    console.log('Post scheduler started - checking for scheduled posts every minute');
+    console.log(`Post scheduler started - checking for scheduled posts on schedule: ${config.scheduler.cronSchedule}`);
   }
 
   private async publishScheduledPosts() {
     try {
-      const response = await axios.post(`${CONTENT_SERVICE_URL}/api/posts/scheduled/publish`);
+      const contentServiceUrl = getServiceUrl('contentService');
+      const publishUrl = `${contentServiceUrl}${config.scheduler.publishEndpoint}`;
+      const response = await axios.post(publishUrl);
       
       if (response.data.publishedPosts.length > 0) {
         console.log(`Published ${response.data.publishedPosts.length} scheduled posts:`, 

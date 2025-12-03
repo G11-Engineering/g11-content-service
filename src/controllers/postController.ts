@@ -4,6 +4,7 @@ import axios from 'axios';
 import { getDatabase } from '../config/database';
 import { createError } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
+import { config, getServiceUrl } from '../config/config';
 
 // Helper function to validate tags exist and are active
 const validateTags = async (tagIds: string[]): Promise<void> => {
@@ -17,12 +18,12 @@ const validateTags = async (tagIds: string[]): Promise<void> => {
     }
   }
   
-  const categoryServiceUrl = process.env.CATEGORY_SERVICE_URL || 'http://category-service:3004';
+  const categoryServiceUrl = getServiceUrl('categoryService');
   const tagValidationPromises = tagIds.map(async (tagId: string) => {
     try {
       // Use axios for better error handling and timeout support
       const response = await axios.get(`${categoryServiceUrl}/api/tags/${tagId}`, {
-        timeout: 5000, // 5 second timeout
+        timeout: config.services.categoryService.timeout,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -367,7 +368,7 @@ export const createPost = async (req: AuthRequest, res: Response, next: NextFunc
     const postStatus = validStatuses.includes(status) ? status : 'draft';
 
     // Create post
-    const authorId = req.user?.id || '00000000-0000-0000-0000-000000000001'; // Default user ID for development
+    const authorId = req.user?.id || config.auth.defaultUserId;
     const result = await client.query(`
       INSERT INTO posts (
         title, slug, content, excerpt, author_id, status,

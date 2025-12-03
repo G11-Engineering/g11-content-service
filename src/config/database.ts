@@ -1,18 +1,20 @@
 import { Pool } from 'pg';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { config } from './config';
 
 let pool: Pool;
 
 export const connectDatabase = async (): Promise<void> => {
   try {
+    // Build connection string if DATABASE_URL is not provided
+    const connectionString = config.database.url || 
+      `postgresql://${config.database.user}:${config.database.password}@${config.database.host}:${config.database.port}/${config.database.name}`;
+    
     pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      connectionString,
+      ssl: config.database.ssl ? { rejectUnauthorized: false } : false,
+      max: config.database.maxConnections,
+      idleTimeoutMillis: config.database.idleTimeoutMillis,
+      connectionTimeoutMillis: config.database.connectionTimeoutMillis,
     });
 
     // Test the connection
